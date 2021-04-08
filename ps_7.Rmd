@@ -1,0 +1,105 @@
+---
+title: "Problem Set 7"
+author: "Nosa Lawani"
+date: "4/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(primer.data)
+library(tidyverse)
+library(rstanarm)
+library(patchwork)
+```
+
+```{r}
+set.seed(2319) 
+object_1 <- kenya %>% 
+  filter(treatment %in% c("local + SMS", "control")) %>%
+  drop_na() %>% 
+  rename(perc_reg = reg_byrv13) %>% 
+  select(-rv13, -block, -poll_station) %>% 
+  slice_sample(n = 100) 
+```
+
+```{r}
+fit_1 <- stan_glm(data = object_1,
+         formula = perc_reg ~ treatment + mean_age,
+         seed = 54, 
+         refresh = 0)
+```
+#Written 1
+$$y_{i} = \beta_0 + \beta_1local + SMS_{i} + \beta_2 mean\_age{i} + \epsilon_{i}$$
+# Written 2
+```{r}
+print(fit_1, digits = 4)
+```
+
+The median value for the Intercept is the best estimate for beta0, which is the perc_reg, i.e. the percent of registered voters in a polling district, if no one was treated and the mean_age was 0. The median value for local + SMS is our best estimate for beta1, which represents the change in percent of registered voters treated counties. The median value for mean_age is the best estimate for beta2, which represents the change in the percent of registered voters for every increase of one year in the polling district's mean_age. For all of these estimates, we can discern our confidence in them using the MAD SD; we are 95% confident that the true value lies within two MAD SDs of the median.
+
+```{r}
+fit_2 <- stan_glm(data = object_1,
+         formula = perc_reg ~ treatment + poverty + distance + pop_density + mean_age,
+         seed = 47, 
+         refresh = 0)
+```
+
+```{r}
+loo_1 <- loo(fit_1, k_threshold = 0.7)
+loo_2 <- loo(fit_2, k_threshold = 0.7)
+
+object_2 <- loo_compare(loo_1, loo_2)
+```
+# Written 3
+```{r}
+print(object_2)
+```
+From the results, our second model, fit_2, has a slightly lower elpd and is therefore more accurate. However, the median value for the difference between fit_1 and fit_2 is less than 4, a value so small it becomes hard to distinguish it from noise and so to determine which of the two values is truly better. This median estimate is really only our best guess of the difference between the two. We, however, can be 95% confident that the actual value of the difference is within two standard errors of the mean. With that taken into account, fit_1 could either be more appreciably worse of an estimate than fit_2 or appreciably greater than fit_2. This only gives more reason to not consider one of these models better than the other. 
+```{r}
+newobs <- tibble(mean_age = 42, treatment = c("local + SMS", "control"))
+object_3 <- posterior_epred(object = fit_1, 
+                  newdata = newobs) %>% 
+  as.tibble() %>% 
+  mutate_all(as.numeric) %>% 
+  rowwise() %>% 
+  rename(Treated = `1`, 
+         Control = `2`) %>% 
+  mutate(ATE = Treated - Control)
+```
+
+```{r}
+p1 <- object_3 %>% 
+   pivot_longer(cols = Treated:Control, 
+                names_to = "treatment", 
+               values_to = "results") %>% 
+  ggplot(aes(x = results, fill = treatment)) +
+  geom_histogram(bins = 100,
+                 position = "identity",
+                 alpha = 0.5,
+                 aes(y = after_stat(count) / sum(count))) +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(title = "Posterior Distribution of the Expected Value of the Change in 
+Proportion of Registered Voters", 
+         subtitle = 'Survey of a 2013 Kenyan Voter Registration Experiment 
+"local+ SMS" treatment shown', 
+         x = "Percent Increase in Registration", 
+         caption = "Source: Kenyan Voter Registration Experiment", 
+       y = "")
+
+p2 <- object_3 %>% 
+  ggplot(aes(x = ATE)) +
+  geom_histogram(bins = 100,
+                 fill = "#00FF00",
+                 aes(y = after_stat(count) / sum(count)))  +
+  scale_x_continuous(labels = scales::percent_format()) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = "Average Treatment Effect", 
+       y = "")
+
+p1 + p2
+```
+
+
+
