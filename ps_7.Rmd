@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library(primer.data)
 library(tidyverse)
 library(rstanarm)
@@ -194,4 +194,10 @@ would be surprised if any district of an average age of 60 reported an increase
 greater than 19% or fewer than 0%, since these are outside of our 95%
 confidence interval. 
 
+\newpage
+
+## Code
+
+```{r print-code, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
+```
 
