@@ -1,5 +1,5 @@
 ---
-title: "Problem Set 7"
+title: "Visualizations of Outreach Effect in Kenyan ELections"
 author: "Nosa Lawani"
 date: "4/7/2021"
 output:
@@ -60,17 +60,17 @@ fit_2 <- stan_glm(data = object_1,
          refresh = 0)
 ```
 
-```{r}
+```{r, message = FALSE, warning = FALSE}
 # I wish I knew more about the loo function. Preceptir's explanation was 
 # somewhat helpful but the error (and I had to get rid of another manually)
 # reminds how little I really know of what is going on. 
 
-warning = FALSE
 loo_1 <- loo(fit_1, k_threshold = 0.7)
 loo_2 <- loo(fit_2, k_threshold = 0.7)
 object_2 <- loo_compare(loo_1, loo_2)
 ```
 # Written 3
+
 ```{r}
 print(object_2)
 ```
@@ -81,7 +81,7 @@ From the results, our second model, fit_2, has a slightly lower elpd and is ther
 newobs <- tibble(mean_age = 42, treatment = c("local + SMS", "control"))
 object_3 <- posterior_epred(object = fit_1, 
                   newdata = newobs) %>% 
-  as.tibble() %>% 
+  as_tibble() %>% 
   mutate_all(as.numeric) %>% 
   rowwise() %>% 
   rename(Treated = `1`, 
@@ -131,7 +131,9 @@ Proportion of Registered Voters",
 "local+ SMS" treatment shown', 
 caption = "Source: Kenyan Voter Registration Experiment")
 ```
+
 # Written 4
+
 The first plot above shows the posterior for the expected value of the change
 in the number of voters in a district whose mean age is 42 under both treatment
 and control. While this same value was negative when age was 0, now that the age
@@ -184,7 +186,9 @@ scale_x_continuous(breaks = (seq(-.24, .24, .06)),
   theme_bw() +
   theme(legend.position = "none")
 ```
+
 # Written 5
+
 For each age on the y axis, a posterior distribution of newly registered voters 
 for a treated districts of that average age is plotted. As average age increases, 
 the amount of individuals who registered increase. The same is true in the U.S.
