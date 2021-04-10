@@ -1,5 +1,5 @@
 ---
-title: "Visualizations of Outreach Effect in Kenyan ELections"
+title: "Visualizations of Outreach Effect in Kenyan Elections"
 author: "Nosa Lawani"
 date: "4/7/2021"
 output:
