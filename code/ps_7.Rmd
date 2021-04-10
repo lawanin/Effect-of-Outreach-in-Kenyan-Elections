@@ -197,11 +197,3 @@ that old people are more likely to vote. For districts with an average age of
 would be surprised if any district of an average age of 60 reported an increase
 greater than 19% or fewer than 0%, since these are outside of our 95%
 confidence interval. 
-
-\newpage
-
-## Code
-
-```{r print-code, ref.label = knitr::all_labels(), echo = TRUE, eval = FALSE}
-```
-
